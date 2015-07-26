@@ -21,19 +21,26 @@ Hanabi is a tool to feel summer in Japan.
    |
 ```
 
-
-## Setup
-
+#Pration
 
 ```bash
  $ sudo apt-get install ncurses-dev
- $ gcc hanabi.c -lncurses -o hanabi
+```
+
+## Install
+
+```bash
+ $ git clone https://github.com/MizukiSonoko/Hanabi
+ $ cd Hanabi
+ $ ./configure
+ $ make
+ $ sudo make install
 ```
 
 ## Usage
 
 ```bash
- $ ./hanabi
+ $ hanabi
 ```
 
 ## Licence
