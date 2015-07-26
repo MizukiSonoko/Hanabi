@@ -11,6 +11,8 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC
 
 # Checks for libraries.
+# FIXME: Replace `main' with a function in `-lncurses':
+AC_CHECK_LIB([ncurses], [main])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h unistd.h])
