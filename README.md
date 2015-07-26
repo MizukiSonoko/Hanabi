@@ -3,8 +3,10 @@
 Fireworks
 ====
 
+Fireworks is a tool to feel summer in Japan.
 
-Overview
+![Fireworks](https://s3-ap-northeast-1.amazonaws.com/mizukisonoko/Fireworks)
+
 
 ## Description
  This is summer in Japan.
@@ -22,6 +24,7 @@ Overview
 
 ## Setup
 
+in ubuntu
 ```bash
  $ sudo apt-get install ncurses-dev
  $ gcc fireworks.c -lncurses -o fireworks

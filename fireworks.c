@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <curses.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <time.h>
 
 char* FLOWER4[] ={
  "    .    ",
@@ -97,40 +99,73 @@ void fireworks(int time,int pos,int line_length){
             for(j=0;j < 8;j++){
                 printSp(pos, heigth - line_length - 4 + j, 1, FLOWER2[j]);
             }
-            printSp(pos, heigth - line_length + 4, 5, LINE); break;
+            printSp(pos, heigth - line_length + 4, 3, LINE); break;
         case 5:case 6:case 7:
             for(j=0;j < 5;j++){
                 printSp(pos, heigth - line_length - 2 + j, 1, FLOWER1[j]);
             }
-            printSp(pos, heigth - line_length + 3, 6, LINE); break;
+            printSp(pos, heigth - line_length + 3, line_length/8, LINE); break;
         case 3:case 4:
             for(j=0;j < 3;j++){
                 printSp(pos, heigth - line_length - 1 + j, 1, FLOWER0[j]);
             }
-            printSp(pos, heigth - line_length + 2, 8, LINE); break;
+            printSp(pos, heigth - line_length + 2, line_length/5, LINE); break;
         case 1:case 2:
             printSp(pos, heigth - line_length, 1, BALL);
-            printSp(pos, heigth - line_length + 1, 9, LINE);
+            printSp(pos, heigth - line_length + 1, line_length/2, LINE);
             break;
     }
 }
 
 
+int firework_set[][2] = {
+    {0,0},
+    {0,0},
+    {0,0},
+    {0,0},
+    {0,0},
+    {0,0},
+    {0,0},
+    {0,0},
+    {0,0},
+    {0,0},
+};
 int main(){
     initscr();
     noecho();
     curs_set(0);
     getmaxyx(stdscr, heigth, width);
     
-    int i, M=100;
-    for(i=0;i<M;i++){
+    int i, j;
+    srand((unsigned)time(NULL));
+
+
+    for(j=0;j < 10;j++){
+        firework_set[j][0] = rand() % (heigth / 2) + (heigth / 4);
+        firework_set[j][1] = 0;
+    }
+
+    for(i=0;i < 300;i++){
         erase();
 
-        if(i<9){
-            set_off(0,i,heigth);
-        }else{
-            fireworks(i-8,0,9);
+        for(j=0;j < 10;j++){
+
+            if(firework_set[j][1] == firework_set[j][0] + 17){
+                if(rand() % 3){
+                    firework_set[j][0] = rand() % (heigth / 2) + (heigth / 4);
+                    firework_set[j][1] = 0;
+                }
+            }else{
+                firework_set[j][1]++;
+            }
+
+            if(firework_set[j][1] < firework_set[j][0]){
+                set_off( j*8 ,firework_set[j][1],heigth);
+            }else{
+                fireworks(firework_set[j][1]-firework_set[j][0]-1, j*8 ,firework_set[j][0]);
+            }
         }
+
         printCline( 0, heigth - 2, width, '-');
         printCline( 0, heigth - 1, width, '#');
         
