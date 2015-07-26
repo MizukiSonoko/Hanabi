@@ -5,7 +5,7 @@
 #include <time.h>
 
 char* FLOWER4[] ={
- "    .    ",
+ "         ",
  "  .....  ",
  " ..   .. ",
  ".*.   .+.",
@@ -16,24 +16,24 @@ char* FLOWER4[] ={
 };
 
 char* FLOWER3[] ={
- "    .    ",
+ "         ",
  "  ..*..  ",
  " .+* *+. ",
  ".*.. ..+.",
  "...   .;.",
  ".+*. .*+.",
- "  .....  ",
+ " ..;.;.. ",
  "    .    "
 };
 
 char* FLOWER2[] ={
- "    .    ",
+ "         ",
  "  ..|..  ",
  " ..*|*.. ",
  ".>*\\*/*<.",
  ".--*O*--.",
  ".>*/*\\*<.",
- "  .*|*.  ",
+ " /.*|*.\\ ",
  "   ^|^   "
 };
 
@@ -118,51 +118,43 @@ void fireworks(int time,int pos,int line_length){
 }
 
 
-int firework_set[][2] = {
-    {0,0},
-    {0,0},
-    {0,0},
-    {0,0},
-    {0,0},
-    {0,0},
-    {0,0},
-    {0,0},
-    {0,0},
-    {0,0},
-};
 int main(){
     initscr();
     noecho();
     curs_set(0);
     getmaxyx(stdscr, heigth, width);
     
+    int number = width / 8;
     int i, j;
+    
+    int *firework_set;
+    firework_set = malloc(sizeof(int) * number * 2);
+    
     srand((unsigned)time(NULL));
-
-
-    for(j=0;j < 10;j++){
-        firework_set[j][0] = rand() % (heigth / 2) + (heigth / 4);
-        firework_set[j][1] = 0;
+    
+    for(j=0;j < number;j+=2){
+        firework_set[j] = rand() % (heigth / 2) + (heigth / 4);
+        firework_set[j+1] = 0;
     }
 
     for(i=0;i < 300;i++){
         erase();
 
-        for(j=0;j < 10;j++){
+        for(j=0;j < number;j+=2){
 
-            if(firework_set[j][1] == firework_set[j][0] + 17){
+            if(firework_set[j+1] == firework_set[j] + 17){
                 if(rand() % 3){
-                    firework_set[j][0] = rand() % (heigth / 2) + (heigth / 4);
-                    firework_set[j][1] = 0;
+                    firework_set[j] = rand() % (heigth / 2) + (heigth / 4);
+                    firework_set[j+1] = 0;
                 }
             }else{
-                firework_set[j][1]++;
+                firework_set[j+1]++;
             }
 
-            if(firework_set[j][1] < firework_set[j][0]){
-                set_off( j*8 ,firework_set[j][1],heigth);
+            if(firework_set[j+1] < firework_set[j]){
+                set_off( j*8 ,firework_set[j+1],heigth);
             }else{
-                fireworks(firework_set[j][1]-firework_set[j][0]-1, j*8 ,firework_set[j][0]);
+                fireworks(firework_set[j+1]-firework_set[j]-1, j*8 ,firework_set[j]);
             }
         }
 
@@ -173,6 +165,7 @@ int main(){
         usleep(300000);
     }
     endwin();
+    free(firework_set);
     return 0;
 }
 
