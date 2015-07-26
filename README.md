@@ -1,9 +1,9 @@
 
 
-Fireworks
+Hanabi
 ====
 
-Fireworks is a tool to feel summer in Japan.
+Hanabi is a tool to feel summer in Japan.
 
 ![Fireworks](https://s3-ap-northeast-1.amazonaws.com/mizukisonoko/Fireworks)
 
@@ -24,21 +24,21 @@ Fireworks is a tool to feel summer in Japan.
 
 ## Setup
 
-in ubuntu
+
 ```bash
  $ sudo apt-get install ncurses-dev
- $ gcc fireworks.c -lncurses -o fireworks
+ $ gcc hanabi.c -lncurses -o hanabi
 ```
 
 ## Usage
 
 ```bash
- $ ./fireworks
+ $ ./hanabi
 ```
 
 ## Licence
 
-[MIT](https://github.com/MizukiSonoko/Fireworks/blob/master/LICENSE)
+[MIT](https://github.com/MizukiSonoko/hanabi/blob/master/LICENSE)
 
 ## Author
 
