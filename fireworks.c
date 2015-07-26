@@ -44,10 +44,17 @@
 #define BALL    "    O    "
 #define LINE    "    |    "
 #define SKY     "         "
+
 #define HORIZON "---------"
 #define EARTH   "#########"
 
 
+void printCline(int start,int line,int num, char c){
+    int i = start;
+    for(;i < num; i++){
+        mvaddch(line, i, c);
+    }
+}
 void println(int start,int line,char* str){
    int i =start;
    for(;*str!='\0';++i){
@@ -77,9 +84,7 @@ void fireworks(int time,int pos){
             i += printSp(pos,i, 1, FLOWER4_6);
             i += printSp(pos,i, 1, FLOWER4_7);
             i += printSp(pos,i, 1, FLOWER4_8);
-            i += printSp(pos,i, 4, SKY);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 4, SKY); break;
         case 22:case 23:case 24:
             i += printSp(pos,0, 2, SKY);
             i += printSp(pos,i, 1, FLOWER3_1);
@@ -91,9 +96,7 @@ void fireworks(int time,int pos){
             i += printSp(pos,i, 1, FLOWER3_7);
             i += printSp(pos,i, 1, FLOWER3_8);
             i += printSp(pos,i, 1, LINE);
-            i += printSp(pos,i, 3, SKY);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 3, SKY); break;
         case 17:case 18:case 19:case 20:case 21:
             i += printSp(pos,0, 2, SKY);
             i += printSp(pos,i, 1, FLOWER2_1);
@@ -104,9 +107,7 @@ void fireworks(int time,int pos){
             i += printSp(pos,i, 1, FLOWER2_6);
             i += printSp(pos,i, 1, FLOWER2_7);
             i += printSp(pos,i, 1, FLOWER2_8);
-            i += printSp(pos,i, 4, LINE);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 4, LINE); break;
         case 14:case 15:case 16:
             i += printSp(pos,0, 4, SKY);
             i += printSp(pos,i, 1, FLOWER1_1);
@@ -114,62 +115,42 @@ void fireworks(int time,int pos){
             i += printSp(pos,i, 1, FLOWER1_3);
             i += printSp(pos,i, 1, FLOWER1_4);
             i += printSp(pos,i, 1, FLOWER1_5);
-            i += printSp(pos,i, 5, LINE);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 5, LINE); break;
         case 12:case 13:
             i += printSp(pos,0, 5, SKY);
             i += printSp(pos,i, 1, FLOWER0_1);
             i += printSp(pos,i, 1, FLOWER0_2);
             i += printSp(pos,i, 1, FLOWER0_3);
-            i += printSp(pos,i, 6, LINE);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 6, LINE); break;
         case 10:case 11:
             i += printSp(pos,0, 6, SKY);
             i += printSp(pos,i, 1, BALL);
-            i += printSp(pos,i, 7, LINE);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 7, LINE); break;
         case 9:
             i += printSp(pos,0, 7, SKY);
             i += printSp(pos,i, 7, LINE);
             i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 1, EARTH); break;
         case 8:
             i += printSp(pos,0, 8, SKY);
-            i += printSp(pos,i, 6, LINE);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 6, LINE);  break;
         case 7:
             i += printSp(pos,0, 9, SKY);
-            i += printSp(pos,i, 5, LINE);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 5, LINE);  break;
         case 6:
             i += printSp(pos,0,10, SKY);
-            i += printSp(pos,i, 4, LINE);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 4, LINE);  break;
         case 5:
             i += printSp(pos,0,11, SKY);
-            i += printSp(pos,i, 3, LINE);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 3, LINE); break;
         case 4:
             i += printSp(pos,0,12, SKY);
-            i += printSp(pos,i, 2, LINE);
-            i += printSp(pos,i, 1, HORIZON);
-            i += printSp(pos,i, 1, EARTH);    break;
+            i += printSp(pos,i, 2, LINE); break;
         case 3:
             i += printSp(pos,0,13, SKY);
-            i += printSp(pos,i, 1, LINE);
-            i += printSp(pos,i, 1,HORIZON);
-            i += printSp(pos,i, 1,EARTH);  break;
+            i += printSp(pos,i, 1, LINE); break;
         default:
-            i += printSp(pos,0,14,SKY);
-            i += printSp(pos,i, 1,HORIZON);
-            i += printSp(pos,i, 1,EARTH);
+            i += printSp(pos,0,14,SKY); break;
     }
 }
 
@@ -178,6 +159,9 @@ int main(){
     initscr();
     noecho();
     curs_set(0);
+    int width, height;
+    getmaxyx(stdscr, height, width);
+    
     int i, M=100;
     int flag_sec = 0;
     int time_sec = 0;
@@ -197,6 +181,10 @@ int main(){
             }
         }
         fireworks(i,0);
+        
+        printCline( 0, height - 2, width, '-');
+        printCline( 0, height - 1, width, '#');
+        
         refresh();
         usleep(300000);
     }
