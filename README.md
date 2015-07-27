@@ -5,23 +5,26 @@ Hanabi
 
 Hanabi is a tool to feel summer in Japan.
 
-![Fireworks](https://s3-ap-northeast-1.amazonaws.com/mizukisonoko/Fireworks)
+![Hanabi](https://s3-ap-northeast-1.amazonaws.com/mizukisonoko/Fireworks)
 
 
 ## Description
  This is summer in Japan.
 ```
-  *|*　
- *\*/*
- ─*O*-
- */※\*
   *|*
-   |
-   |
-   |
+ *\*/*   _   _                   _     _   
+ -*O*-  | | | | __ _ _ __   __ _| |__ (_)  
+ */*\*  | |_| |/ _` | '_ \ / _` | '_ \| |  
+  *|*   |  _  | (_| | | | | (_| | |_) | |  
+   |    |_| |_|\__,_|_| |_|\__,_|_.__/|_|  
+   |                                       
+ /^^\/^^\/^\/\/^^^^\   /^^\/^\/\    /\^    
+/    \ . \   .  .   \^/    \ ,  \^^/   \^/\
+-------------------------------------------
+###########################################
 ```
 
-#Pration
+## Preparation
 
 ```bash
  $ sudo apt-get install ncurses-dev
