@@ -53,7 +53,7 @@ Hanabi is a tool to feel summer in Japan.
 $ hanabi -b NUMBER
 ```
 
-- Set the hours for the town's fireworks display.
+- Set the hours for the fireworks display.
 ```
  $ hanabi -t TIME
 ```
