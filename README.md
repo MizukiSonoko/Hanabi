@@ -46,11 +46,16 @@ Hanabi is a tool to feel summer in Japan.
  $ hanabi
 ```
 
-## Option
+## Options
 
-Set the number of fireworks ball.
+- Set the number of fireworks ball.
 ```
-$ hanabi -b number
+$ hanabi -b NUMBER
+```
+
+- Set the hours for the town's fireworks display.
+```
+ $ hanabi -t TIME
 ```
 
 ## Licence
