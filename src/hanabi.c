@@ -119,57 +119,64 @@ void fireworks(int time,int pos,int line_length){
 
 void mountain(int line,int width,int* mountain_set){
     int i = 0, j = 0;
-
-    if(mountain_set[0]!=0){
-        for(;j < width * 2;j += 2){
-            mvaddch(line, mountain_set[j+1], mountain_set[j]);
-        }
-    }
-
     int c, h = 0;
-    for(;i < width; i++, j+=2){
+
+    /*
+    if(mountain_set[0] != 0){
+        for(;j < width * 2;j += 2){
+            mvaddch( line, mountain_set[j+1], (char)mountain_set[j]);
+        }
+        return;
+    }
+    */
+
+    for(;j < width * 2; j += 2){
         if(h == 0){
-            mvaddch(line, i, '/');
-            
             mountain_set[j] = '/';
             mountain_set[j+1] = h;
-
             h++;
+        }else if(h == 3){
+            c = rand() % 3;
+            if(c == 0){
+                h--;
+                mountain_set[j] = '^';
+                mountain_set[j+1] = h;
+            }else{
+                mountain_set[j] = '\\';
+                mountain_set[j+1] = h;
+                h--;
+            }
         }else{
             c = rand() % 3;
             if(c == 0){
                 h--;
-                mvaddch(line - h, i, '^');
-
                 mountain_set[j] = '^';
                 mountain_set[j+1] = h;
-
             }else if(c == 1){
                 h++;
-                mvaddch(line - h, i, '/');
-
                 mountain_set[j] = '/';
                 mountain_set[j+1] = h;
-
             }else{
-                mvaddch(line - h, i, '\\'); 
-        
                 mountain_set[j] = '\\';
                 mountain_set[j+1] = h;
-
                 h--;
             }
         }
+    }
+
+    for(;j < width * 2;j += 2){
+        mvaddch( line, mountain_set[j+1], (char)mountain_set[j]);
     }
 }
 
 
 int BOMB = 0;
+int TIME = 0;
 int MOUNTAIN = 0;
 
 void opt(int argc,char *argv[]){
     int result;
-    while((result=getopt(argc,argv,"b:m")) != -1){
+    while((result=getopt(argc,argv,"t:b:m")) != -1){
         switch(result){
             case 'm':        
                 MOUNTAIN = 1;
@@ -177,8 +184,11 @@ void opt(int argc,char *argv[]){
             case 'b':        
                 BOMB = atoi(optarg);
                 break;
+            case 't':        
+                TIME = atoi(optarg);
+                break;                
             default: /* '?' */
-                fprintf(stderr, "Usage: %s [-b bomb]\n",
+                fprintf(stderr, "Usage: %s [-b bomb] [-t time]\n",
                         argv[0]);
                 exit(EXIT_FAILURE);
         }
@@ -202,6 +212,13 @@ int main(int argc,char *argv[]){
     if(BOMB && number > BOMB){
         number = BOMB;
     }
+    if(!TIME){
+        TIME = 300;
+    }
+    if(BOMB){
+        TIME = 1000000;
+    }
+
     int *firework_set;
     int *mountain_set;
     firework_set = malloc(sizeof(int) * number * 2);
@@ -217,7 +234,7 @@ int main(int argc,char *argv[]){
         bomb++;
     }
 
-    for(i=0;i < 300;i++){
+    for(i=0;i < TIME;i++){
         erase();
 
         for(j=0;j < number;j += 2){
