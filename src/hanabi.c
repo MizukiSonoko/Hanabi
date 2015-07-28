@@ -173,16 +173,20 @@ void mountain(int line,int width,int* mountain_set){
 int BOMB = 0;
 int TIME = 0;
 int MOUNTAIN = 0;
+int FREQUENCY = 0;
 
 void opt(int argc,char *argv[]){
     int result;
-    while((result=getopt(argc,argv,"t:b:m")) != -1){
+    while((result=getopt(argc,argv,"f:t:b:m")) != -1){
         switch(result){
             case 'm':        
                 MOUNTAIN = 1;
                 break;
             case 'b':        
                 BOMB = atoi(optarg);
+                break;
+            case 'f':        
+                FREQUENCY = atoi(optarg);
                 break;
             case 't':        
                 TIME = atoi(optarg);
@@ -214,6 +218,9 @@ int main(int argc,char *argv[]){
     }
     if(!TIME){
         TIME = 300;
+    }
+    if(!FREQUENCY){
+        FREQUENCY = 100000;
     }
     if(BOMB){
         TIME = 1000000;
@@ -263,7 +270,7 @@ int main(int argc,char *argv[]){
         printCline( 0, heigth - 1, width, '#');
         
         refresh();
-        usleep(100000);
+        usleep(FREQUENCY);
 
         if(BOMB && bomb > BOMB * 2){
             break;
