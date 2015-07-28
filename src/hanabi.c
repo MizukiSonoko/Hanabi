@@ -114,35 +114,58 @@ void fireworks(int time,int pos,int line_length){
             printSp(pos, heigth - line_length, 1, BALL);
             printSp(pos, heigth - line_length + 1, line_length/2, LINE);
             break;
-    }
+    }    
 }
+int BOMB = 0;
 
+void opt(int argc,char *argv[]){
+    int result;
+    while((result=getopt(argc,argv,"b:")) != -1){
+        switch(result){
+            case 'b':        
+                BOMB = atoi(optarg);
+                break;
+            default: /* '?' */
+                fprintf(stderr, "Usage: %s [-b bomb]\n",
+                        argv[0]);
+                exit(EXIT_FAILURE);
+        }
+    }
+}    
+int main(int argc,char *argv[]){
+    opt( argc, argv);
 
-int main(){
     initscr();
     noecho();
     curs_set(0);
     getmaxyx(stdscr, heigth, width);
     
     int number = width / 8;
+    int bomb = 0;
     int i, j;
-    
-    int *firework_set;
-    firework_set = malloc(sizeof(int) * number * 2);
     
     srand((unsigned)time(NULL));
     
-    for(j=0;j < number;j+=2){
-        firework_set[j] = rand() % (heigth / 2) + (heigth / 4);
+    if(BOMB && number > BOMB){
+        number = BOMB;
+    }
+    int *firework_set;
+    firework_set = malloc(sizeof(int) * number * 2);
+    
+
+    for(j=0;j < number * 2;j+=2){
+        firework_set[j] = rand() % (heigth / 2) + (heigth / 2);
         firework_set[j+1] = 0;
+        bomb++;
     }
 
     for(i=0;i < 300;i++){
         erase();
 
-        for(j=0;j < number;j+=2){
+        for(j=0;j < number;j += 2){
 
-            if(firework_set[j+1] == firework_set[j] + 17){
+            if(firework_set[j+1] == firework_set[j] + 17){            
+                bomb++;
                 if(rand() % 3){
                     firework_set[j] = rand() % (heigth / 2) + (heigth / 4);
                     firework_set[j+1] = 0;
@@ -162,10 +185,13 @@ int main(){
         printCline( 0, heigth - 1, width, '#');
         
         refresh();
-        usleep(300000);
+        usleep(100000);
+
+        if(BOMB && bomb > BOMB * 2){
+            break;
+        }
     }
     endwin();
     free(firework_set);
     return 0;
 }
-
