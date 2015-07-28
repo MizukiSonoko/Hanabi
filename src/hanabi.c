@@ -116,12 +116,64 @@ void fireworks(int time,int pos,int line_length){
             break;
     }    
 }
+
+void mountain(int line,int width,int* mountain_set){
+    int i = 0, j = 0;
+
+    if(mountain_set[0]!=0){
+        for(;j < width * 2;j += 2){
+            mvaddch(line, mountain_set[j+1], mountain_set[j]);
+        }
+    }
+
+    int c, h = 0;
+    for(;i < width; i++, j+=2){
+        if(h == 0){
+            mvaddch(line, i, '/');
+            
+            mountain_set[j] = '/';
+            mountain_set[j+1] = h;
+
+            h++;
+        }else{
+            c = rand() % 3;
+            if(c == 0){
+                h--;
+                mvaddch(line - h, i, '^');
+
+                mountain_set[j] = '^';
+                mountain_set[j+1] = h;
+
+            }else if(c == 1){
+                h++;
+                mvaddch(line - h, i, '/');
+
+                mountain_set[j] = '/';
+                mountain_set[j+1] = h;
+
+            }else{
+                mvaddch(line - h, i, '\\'); 
+        
+                mountain_set[j] = '\\';
+                mountain_set[j+1] = h;
+
+                h--;
+            }
+        }
+    }
+}
+
+
 int BOMB = 0;
+int MOUNTAIN = 0;
 
 void opt(int argc,char *argv[]){
     int result;
-    while((result=getopt(argc,argv,"b:")) != -1){
+    while((result=getopt(argc,argv,"b:m")) != -1){
         switch(result){
+            case 'm':        
+                MOUNTAIN = 1;
+                break;
             case 'b':        
                 BOMB = atoi(optarg);
                 break;
@@ -131,7 +183,8 @@ void opt(int argc,char *argv[]){
                 exit(EXIT_FAILURE);
         }
     }
-}    
+}
+
 int main(int argc,char *argv[]){
     opt( argc, argv);
 
@@ -150,8 +203,13 @@ int main(int argc,char *argv[]){
         number = BOMB;
     }
     int *firework_set;
+    int *mountain_set;
     firework_set = malloc(sizeof(int) * number * 2);
-    
+    mountain_set = malloc(sizeof(int) * width * 2);
+
+    for(j=0;j < width * 2;j++){
+        mountain_set[j] = 0;
+    }
 
     for(j=0;j < number * 2;j+=2){
         firework_set[j] = rand() % (heigth / 2) + (heigth / 2);
@@ -181,6 +239,9 @@ int main(int argc,char *argv[]){
             }
         }
 
+        if(MOUNTAIN){
+            mountain(heigth - 3, width, mountain_set);
+        }
         printCline( 0, heigth - 2, width, '-');
         printCline( 0, heigth - 1, width, '#');
         
@@ -193,5 +254,6 @@ int main(int argc,char *argv[]){
     }
     endwin();
     free(firework_set);
+    free(mountain_set);
     return 0;
 }
