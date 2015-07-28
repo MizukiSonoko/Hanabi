@@ -192,7 +192,7 @@ void opt(int argc,char *argv[]){
                 TIME = atoi(optarg);
                 break;                
             default: /* '?' */
-                fprintf(stderr, "Usage: %s [-b bomb] [-t time]\n",
+                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps]\n",
                         argv[0]);
                 exit(EXIT_FAILURE);
         }
@@ -220,8 +220,10 @@ int main(int argc,char *argv[]){
         TIME = 300;
     }
     if(!FREQUENCY){
-        FREQUENCY = 100000;
+        FREQUENCY = 10;
     }
+    FREQUENCY *= 10000;
+
     if(BOMB){
         TIME = 1000000;
     }
