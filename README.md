@@ -57,6 +57,12 @@ $ hanabi -b NUMBER
 ```
  $ hanabi -t TIME
 ```
+"TIME > 80" is better.
+
+- Set Frames Per Second.
+```
+ $ hanabi -f FPS
+```
 
 ## Licence
 
