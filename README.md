@@ -46,6 +46,13 @@ Hanabi is a tool to feel summer in Japan.
  $ hanabi
 ```
 
+## Option
+
+Set the number of fireworks ball.
+```
+$ hanabi -b number
+```
+
 ## Licence
 
 [MIT](https://github.com/MizukiSonoko/hanabi/blob/master/LICENSE)
