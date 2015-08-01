@@ -237,7 +237,7 @@ int main(int argc,char *argv[]){
         mountain_set[j] = 0;
     }
 
-    for(j=0;j < number * 2;j+=2){
+    for(j=0;j < number * 2;j += 2){
         firework_set[j] = rand() % (heigth / 2) + (heigth / 2);
         firework_set[j+1] = 0;
         bomb++;
@@ -274,7 +274,7 @@ int main(int argc,char *argv[]){
         refresh();
         usleep(FREQUENCY);
 
-        if(BOMB && bomb > BOMB * 2){
+        if(BOMB && bomb >= BOMB * 2){
             break;
         }
     }
