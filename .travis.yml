@@ -3,6 +3,7 @@ compiler:
     - clang
 script:
   - clang++ --version
+  - ./configure
   - make
 install:
     - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
