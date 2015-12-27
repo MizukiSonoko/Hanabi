@@ -1,0 +1,12 @@
+language: cpp
+compiler:
+    - clang
+script:
+  - clang++ --version
+  - make
+install:
+    - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
+    - sudo apt-get -qq update
+    - sudo apt-get -qq install g++-4.9
+    - sudo apt-get install ncurses-dev
+
