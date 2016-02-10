@@ -193,8 +193,17 @@ void opt(int argc,char *argv[]){
             case 't':        
                 TIME = atoi(optarg);
                 break;                
-            case 'v':        
-                printf("Hanabi version:%s\n", version);
+            case 'v':
+                printf("  *|*                                           \n");
+                printf(" *\\*/*   _   _                   _     _        \n");
+                printf(" -*O*-  | | | | __ _ _ __   __ _| |__ (_)       \n");
+                printf(" */*\\*  | |_| |/ _` | '_ \\ / _` | '_ \\| |       \n");
+                printf("  *|*   |  _  | (_| | | | | (_| | |_) | |       \n");
+                printf("   |    |_| |_|\\__,_|_| |_|\\__,_|_.__/|_|  %s\n", version);
+                printf("   |                                            \n");
+                printf("------------------------------------------------\n");
+                printf("################################################\n");
+                printf("\n           Hanabi version:%s\n\n", version);
                 exit(0);              
             default: /* '?' */
                 fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps]\n",
