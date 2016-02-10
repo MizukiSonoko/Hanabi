@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+char* version = "1.0.1";
+
 char* FLOWER4[] ={
  "         ",
  "  .....  ",
@@ -177,7 +179,7 @@ int FREQUENCY = 0;
 
 void opt(int argc,char *argv[]){
     int result;
-    while((result=getopt(argc,argv,"f:t:b:m")) != -1){
+    while((result=getopt(argc,argv,"f:t:b:mv")) != -1){
         switch(result){
             case 'm':        
                 MOUNTAIN = 1;
@@ -191,6 +193,9 @@ void opt(int argc,char *argv[]){
             case 't':        
                 TIME = atoi(optarg);
                 break;                
+            case 'v':        
+                printf("Hanabi version:%s\n", version);
+                exit(0);              
             default: /* '?' */
                 fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps]\n",
                         argv[0]);
