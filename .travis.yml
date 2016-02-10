@@ -5,6 +5,7 @@ script:
   - clang++ --version
   - ./configure
   - make
+  - sudo make install
   - hanabi -v
 install:
     - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
