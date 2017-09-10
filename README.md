@@ -28,23 +28,31 @@ Hanabi is a tool to feel summer in Japan.
 ## Preparation
 
 ```bash
- $ sudo apt-get install ncurses-dev
+$ sudo apt-get install ncurses-dev
 ```
 
 ## Install
 
+
+### macOS
+```
+$ brew tap mizukisonoko/hanabi
+$ brew install hanabi
+```
+
+### build
 ```bash
- $ git clone https://github.com/MizukiSonoko/Hanabi
- $ cd Hanabi
- $ ./configure
- $ make
- $ sudo make install
+$ git clone https://github.com/MizukiSonoko/Hanabi
+$ cd Hanabi
+$ ./configure
+$ make
+$ sudo make install
 ```
 
 ## Usage
 
 ```bash
- $ hanabi
+$ hanabi
 ```
 
 ## Options
@@ -56,13 +64,13 @@ $ hanabi -b NUMBER
 
 - Set the hours for the fireworks display.
 ```
- $ hanabi -t TIME
+$ hanabi -t TIME
 ```
 "TIME > 80" is better.
 
 - Set Frames Per Second.
 ```
- $ hanabi -f FPS
+$ hanabi -f FPS
 ```
 
 ## Licence
