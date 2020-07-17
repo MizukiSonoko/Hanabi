@@ -84,8 +84,13 @@ void set_off(int pos,int length,int heigth){
     printSp(pos, heigth - length, length, LINE);
 }
 
-void fireworks(int time,int pos,int line_length){
+int get_color(){
+    return (rand() % 7) + 1;
+}
+
+void fireworks(int time,int pos,int line_length,int color){
     int i = 0, j = 0;
+    attrset(COLOR_PAIR(color) | A_BOLD);
     switch(time){
         case 16:case 17:
             for(j=0;j < 8;j++){
@@ -117,6 +122,7 @@ void fireworks(int time,int pos,int line_length){
             printSp(pos, heigth - line_length + 1, line_length/2, LINE);
             break;
     }    
+    attrset(COLOR_PAIR(0));
 }
 
 void mountain(int line,int width,int* mountain_set){
@@ -219,6 +225,16 @@ int main(int argc,char *argv[]){
     initscr();
     noecho();
     curs_set(0);
+    start_color();
+
+	init_pair(1, COLOR_RED, COLOR_BLACK);
+	init_pair(2, COLOR_GREEN, COLOR_BLACK);
+	init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+	init_pair(4, COLOR_BLUE, COLOR_BLACK);
+	init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
+	init_pair(6, COLOR_CYAN, COLOR_BLACK);
+    init_pair(7, COLOR_WHITE, COLOR_BLACK);
+
     getmaxyx(stdscr, heigth, width);
     
     int number = width / 8;
@@ -243,8 +259,10 @@ int main(int argc,char *argv[]){
     }
 
     int *firework_set;
+    int *firework_color_set;
     int *mountain_set;
     firework_set = malloc(sizeof(int) * number * 2);
+    firework_color_set = malloc(sizeof(int) * number * 2);
     mountain_set = malloc(sizeof(int) * width * 2);
 
     for(j=0;j < width * 2;j++){
@@ -252,8 +270,10 @@ int main(int argc,char *argv[]){
     }
 
     for(j=0;j < number * 2;j += 2){
-        firework_set[j] = rand() % (heigth / 2) + (heigth / 2);
+        firework_set[j] = rand() % (heigth / 2) + (heigth / 3);
         firework_set[j+1] = 0;
+        firework_color_set[j] = get_color();
+        firework_color_set[j+1] = 0;
         bomb++;
     }
 
@@ -275,7 +295,7 @@ int main(int argc,char *argv[]){
             if(firework_set[j+1] < firework_set[j]){
                 set_off( j*8 ,firework_set[j+1],heigth);
             }else{
-                fireworks(firework_set[j+1]-firework_set[j]-1, j*8 ,firework_set[j]);
+                fireworks(firework_set[j+1]-firework_set[j]-1, j*8 ,firework_set[j], firework_color_set[j]);
             }
         }
 
@@ -294,6 +314,7 @@ int main(int argc,char *argv[]){
     }
     endwin();
     free(firework_set);
+    free(firework_color_set);
     free(mountain_set);
     return 0;
 }
