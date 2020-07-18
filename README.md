@@ -6,7 +6,7 @@ Hanabi
 [![Build Status](https://travis-ci.org/MizukiSonoko/Hanabi.svg?branch=master)](https://travis-ci.org/MizukiSonoko/Hanabi)  
 Hanabi is a tool to feel summer in Japan.
 
-![Hanabi](https://github.com/MizukiSonoko/Hanabi/blob/master/images/demo.gif)
+![Hanabi](https://github.com/MizukiSonoko/Hanabi/blob/master/images/demo-movie.gif)
 
 
 ## Description
