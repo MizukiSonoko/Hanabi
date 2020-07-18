@@ -58,19 +58,24 @@ $ hanabi
 ## Options
 
 - Set the number of fireworks ball.
-```
+```bash
 $ hanabi -b NUMBER
 ```
 
 - Set the hours for the fireworks display.
-```
+```bash
 $ hanabi -t TIME
 ```
 "TIME > 80" is better.
 
 - Set Frames Per Second.
-```
+```bash
 $ hanabi -f FPS
+```
+
+- Infinite Hanabi.
+```bash
+$ hanabi -i
 ```
 
 ## Licence
