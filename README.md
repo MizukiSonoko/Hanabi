@@ -25,14 +25,13 @@ Hanabi is a tool to feel summer in Japan.
 ###########################################
 ```
 
-## Preparation
+## Run
 
 ```bash
-$ sudo apt-get install ncurses-dev
+$ docker run -it --rm  -e COLUMNS=$COLUMNS -e LINES=$LINES  docker.pkg.github.com/mizukisonoko/hanabi/hanabi:1.0 hanabi
 ```
 
-## Install
-
+## Install 
 
 ### macOS
 ```
@@ -42,6 +41,7 @@ $ brew install hanabi
 
 ### build
 ```bash
+$ sudo apt-get install ncurses-dev
 $ git clone https://github.com/MizukiSonoko/Hanabi
 $ cd Hanabi
 $ ./configure
