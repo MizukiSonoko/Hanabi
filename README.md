@@ -28,7 +28,12 @@ Hanabi is a tool to feel summer in Japan.
 ## Run
 
 ```bash
-$ docker run -it --rm  -e COLUMNS=$COLUMNS -e LINES=$LINES  docker.pkg.github.com/mizukisonoko/hanabi/hanabi:1.2 hanabi
+$ docker run --rm -e COLUMNS=$COLUMNS -e LINES=$LINES docker.pkg.github.com/mizukisonoko/hanabi/hanabi:1.2
+```
+
+### With option
+```bash
+$  docker run --rm -e COLUMNS=$COLUMNS -e LINES=$LINES docker.pkg.github.com/mizukisonoko/hanabi/hanabi:1.2 hanabi -i
 ```
 
 ## Install 
