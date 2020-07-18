@@ -3,6 +3,7 @@ compiler:
     - clang
 script:
   - clang++ --version
+  - autoreconf
   - ./configure
   - make
   - sudo make install
