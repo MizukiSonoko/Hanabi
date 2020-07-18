@@ -1,10 +1,12 @@
 #include <stdio.h>
-#include <curses.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
+#include <limits.h>
 
-char* version = "1.0.1";
+#include <curses.h>
+
+char* version = "1.2.0";
 
 char* FLOWER4[] ={
  "         ",
@@ -179,19 +181,23 @@ void mountain(int line,int width,int* mountain_set){
 
 
 int BOMB = 0;
+bool INFINITE = false;
 int TIME = 0;
 int MOUNTAIN = 0;
 int FREQUENCY = 0;
 
 void opt(int argc,char *argv[]){
     int result;
-    while((result=getopt(argc,argv,"f:t:b:mv")) != -1){
+    while((result=getopt(argc,argv,"f:t:b:imv")) != -1){
         switch(result){
             case 'm':        
                 MOUNTAIN = 1;
                 break;
             case 'b':        
                 BOMB = atoi(optarg);
+                break;
+            case 'i':        
+                INFINITE = true;
                 break;
             case 'f':        
                 FREQUENCY = atoi(optarg);
@@ -212,7 +218,7 @@ void opt(int argc,char *argv[]){
                 printf("\n           Hanabi version:%s\n\n", version);
                 exit(0);              
             default: /* '?' */
-                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps]\n",
+                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps] [-i]\n",
                         argv[0]);
                 exit(EXIT_FAILURE);
         }
@@ -255,9 +261,9 @@ int main(int argc,char *argv[]){
     FREQUENCY *= 10000;
 
     if(BOMB){
-        TIME = 1000000;
+        TIME = INT_MAX;
     }
-
+    
     int *firework_set;
     int *firework_color_set;
     int *mountain_set;
@@ -277,7 +283,7 @@ int main(int argc,char *argv[]){
         bomb++;
     }
 
-    for(i=0;i < TIME;i++){
+    for(i=0;i < TIME || INFINITE;i++){
         erase();
 
         for(j=0;j < number;j += 2){
