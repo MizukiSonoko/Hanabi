@@ -28,7 +28,7 @@ Hanabi is a tool to feel summer in Japan.
 ## Run
 
 ```bash
-$ docker run -it --rm  -e COLUMNS=$COLUMNS -e LINES=$LINES  docker.pkg.github.com/mizukisonoko/hanabi/hanabi:1.0 hanabi
+$ docker run -it --rm  -e COLUMNS=$COLUMNS -e LINES=$LINES  docker.pkg.github.com/mizukisonoko/hanabi/hanabi:1.2 hanabi
 ```
 
 ## Install 
@@ -68,7 +68,7 @@ $ hanabi -t TIME
 ```
 "TIME > 80" is better.
 
-- Set Frames Per Second.
+- Set Frames Per Second. default is 10
 ```bash
 $ hanabi -f FPS
 ```
