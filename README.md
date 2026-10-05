@@ -88,6 +88,11 @@ $ hanabi -i
 $ hanabi -m
 ```
 
+- Show Niagara fireworks shaped like Mt. Fuji.
+```bash
+$ hanabi -n
+```
+
 ## Licence
 
 [MIT](https://github.com/MizukiSonoko/hanabi/blob/master/LICENSE)

@@ -189,18 +189,142 @@ void mountain(int line,int width,int* mountain_set){
 }
 
 
+#define NIAGARA_SUMMIT_HALF 3
+#define NIAGARA_MAX_LEVEL 6
+#define NIAGARA_IGNITE_SPEED 2
+#define NIAGARA_BURN_TIME 80
+#define NIAGARA_REST_TIME 30
+
+/* Half width of the Fuji-shaped wire at the given level (0: summit).
+ * It grows quadratically so the slopes are steep near the top and gentle at the foot. */
+int fuji_half_width(int level){
+    return NIAGARA_SUMMIT_HALF + level * (level + 1) / 2;
+}
+
+int fuji_levels(int width,int wire_y){
+    int levels = heigth / 8;
+    if(levels > NIAGARA_MAX_LEVEL){
+        levels = NIAGARA_MAX_LEVEL;
+    }
+    if(levels > wire_y - 1){
+        levels = wire_y - 1;
+    }
+    while(levels > 0 && fuji_half_width(levels) * 2 + 1 > width){
+        levels--;
+    }
+    return levels;
+}
+
+/* Returns the row of the wire at column x and stores the character to draw in wire_char. */
+int niagara_wire(int x,int center,int wire_y,int levels,char* wire_char){
+    int d = abs(x - center);
+    int k;
+    if(levels > 0 && d <= NIAGARA_SUMMIT_HALF){
+        *wire_char = '_';
+        return wire_y - levels;
+    }
+    for(k = 1;k <= levels && fuji_half_width(k) < d;k++);
+    if(k > levels){
+        *wire_char = '=';
+        return wire_y;
+    }
+    if(d == fuji_half_width(k - 1) + 1){
+        *wire_char = x < center ? '/' : '\\';
+    }else{
+        *wire_char = k == levels ? '=' : '_';
+    }
+    return wire_y - levels + k;
+}
+
+/* Sparks are a hash of (x, y - t) so the pattern flows down one row per frame.
+ * They thin out as they fall away from the wire. */
+char niagara_spark(int x,int y,int t,int dist,int span){
+    unsigned int h = (unsigned int)x * 73856093u ^ (unsigned int)(y - t) * 19349663u;
+    h ^= h >> 13;
+    h *= 0x5bd1e995u;
+    h ^= h >> 15;
+    if((int)(h % 100) < dist * 60 / span){
+        return ' ';
+    }
+    if(dist <= 2){
+        return "||:'"[(h / 100) % 4];
+    }
+    return ":.'.,|"[(h / 100) % 6];
+}
+
+/* White above the flat wire (snow on Fuji), then yellow fading to red near the ground. */
+int niagara_color(int y,int wire_y,int ground){
+    if(y <= wire_y){
+        return COLOR_PAIR(7) | A_BOLD;
+    }
+    if(y - wire_y < (ground - wire_y) / 2){
+        return COLOR_PAIR(3) | A_BOLD;
+    }
+    return COLOR_PAIR(1) | A_BOLD;
+}
+
+int niagara_wire_y(){
+    return heigth * 3 / 4;
+}
+
+int niagara_summit(int width){
+    int wire_y = niagara_wire_y();
+    return wire_y - fuji_levels(width, wire_y);
+}
+
+/* Draws frame i of a Niagara fireworks whose wire rises like Mt. Fuji in the middle.
+ * The fire starts at the summit, spreads to both ends and burns out in the same order. */
+void niagara(int i,int width){
+    int wire_y = niagara_wire_y();
+    int ground = heigth - 3;
+    int levels = fuji_levels(width, wire_y);
+    int center = width / 2;
+    int cycle = center / NIAGARA_IGNITE_SPEED + NIAGARA_BURN_TIME + ground + NIAGARA_REST_TIME;
+    int t = i % cycle;
+    int x, y, top, lit, from;
+    char wire_char, spark;
+
+    for(x = 0;x < width;x++){
+        top = niagara_wire(x, center, wire_y, levels, &wire_char);
+        lit = t - abs(x - center) / NIAGARA_IGNITE_SPEED;
+
+        attrset(lit >= 0 && lit < NIAGARA_BURN_TIME ? COLOR_PAIR(3) | A_BOLD : COLOR_PAIR(7));
+        mvaddch(top, x, wire_char);
+        if(lit < 0){
+            continue;
+        }
+
+        /* The curtain front falls one row per frame; after burning out its top falls the same way. */
+        from = lit > NIAGARA_BURN_TIME ? lit - NIAGARA_BURN_TIME : 0;
+        for(y = top + 1 + from;y <= ground && y <= top + lit;y++){
+            spark = niagara_spark(x, y, t, y - top, ground - wire_y + levels);
+            if(spark == ' '){
+                continue;
+            }
+            attrset(niagara_color(y, wire_y, ground));
+            mvaddch(y, x, spark);
+        }
+    }
+    attrset(COLOR_PAIR(0));
+}
+
+
 int BOMB = 0;
 bool INFINITE = false;
 int TIME = 0;
 int MOUNTAIN = 0;
+int NIAGARA = 0;
 int FREQUENCY = 0;
 
 void opt(int argc,char *argv[]){
     int result;
-    while((result=getopt(argc,argv,"f:t:b:imv")) != -1){
+    while((result=getopt(argc,argv,"f:t:b:imnv")) != -1){
         switch(result){
             case 'm':        
                 MOUNTAIN = 1;
+                break;
+            case 'n':
+                NIAGARA = 1;
                 break;
             case 'b':        
                 BOMB = atoi(optarg);
@@ -227,11 +351,25 @@ void opt(int argc,char *argv[]){
                 printf("\n           Hanabi version:%s\n\n", version);
                 exit(0);              
             default: /* '?' */
-                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps] [-i] [-m] [-v]\n",
+                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps] [-i] [-m] [-n] [-v]\n",
                         argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
+}
+
+/* A flower spans 4 rows above and 3 rows below row heigth - length.
+ * With Niagara it is kept above the Fuji summit so the two never overlap. */
+int launch_length(int base){
+    int low, high;
+    if(NIAGARA){
+        low = heigth - niagara_summit(width) + 4;
+        high = heigth - 4;
+        if(low <= high){
+            return low + rand() % (high - low + 1);
+        }
+    }
+    return rand() % (heigth / 2) + base;
 }
 
 int main(int argc,char *argv[]){
@@ -285,7 +423,7 @@ int main(int argc,char *argv[]){
     }
 
     for(j=0;j < number * 2;j += 2){
-        firework_set[j] = rand() % (heigth / 2) + (heigth / 3);
+        firework_set[j] = launch_length(heigth / 3);
         firework_set[j+1] = 0;
         firework_color_set[j] = get_color();
         firework_color_set[j+1] = 0;
@@ -300,7 +438,7 @@ int main(int argc,char *argv[]){
             if(firework_set[j+1] == firework_set[j] + 17){            
                 bomb++;
                 if(rand() % 3){
-                    firework_set[j] = rand() % (heigth / 2) + (heigth / 4);
+                    firework_set[j] = launch_length(heigth / 4);
                     firework_set[j+1] = 0;
                 }
             }else{
@@ -314,6 +452,9 @@ int main(int argc,char *argv[]){
             }
         }
 
+        if(NIAGARA){
+            niagara(i, width);
+        }
         if(MOUNTAIN){
             mountain(heigth - 3, width, mountain_set);
         }
