@@ -6,6 +6,10 @@
 
 #include <curses.h>
 
+#include "hanabi.h"
+#include "special.h"
+#include "message.h"
+
 char* version = "1.2.0";
 
 char* FLOWER4[] ={
@@ -86,13 +90,27 @@ void set_off(int pos,int length,int heigth){
     printSp(pos, heigth - length, length, LINE);
 }
 
-int get_color(){
+int get_color(void){
     return (rand() % 7) + 1;
 }
 
-void fireworks(int time,int pos,int line_length,int color){
+/* Deterministic pseudo random value, used for patterns that must be stable between frames. */
+unsigned int hash2(int a,int b){
+    unsigned int h = (unsigned int)a * 73856093u ^ (unsigned int)b * 19349663u;
+    h ^= h >> 13;
+    h *= 0x5bd1e995u;
+    h ^= h >> 15;
+    return h;
+}
+
+void fireworks(int time,int pos,int line_length,int color,int shape){
     int i = 0, j = 0;
     attrset(COLOR_PAIR(color) | A_BOLD);
+    if(shape != SHAPE_NONE && time >= 8){
+        draw_shape(shape, time, pos, heigth - line_length);
+        attrset(COLOR_PAIR(0));
+        return;
+    }
     switch(time){
         case 16:case 17:
             for(j=0;j < 8;j++){
@@ -239,10 +257,7 @@ int niagara_wire(int x,int center,int wire_y,int levels,char* wire_char){
 /* Sparks are a hash of (x, y - t) so the pattern flows down one row per frame.
  * They thin out as they fall away from the wire. */
 char niagara_spark(int x,int y,int t,int dist,int span){
-    unsigned int h = (unsigned int)x * 73856093u ^ (unsigned int)(y - t) * 19349663u;
-    h ^= h >> 13;
-    h *= 0x5bd1e995u;
-    h ^= h >> 15;
+    unsigned int h = hash2(x, y - t);
     if((int)(h % 100) < dist * 60 / span){
         return ' ';
     }
@@ -318,13 +333,16 @@ int FREQUENCY = 0;
 
 void opt(int argc,char *argv[]){
     int result;
-    while((result=getopt(argc,argv,"f:t:b:imnv")) != -1){
+    while((result=getopt(argc,argv,"f:t:b:s:imnv")) != -1){
         switch(result){
             case 'm':        
                 MOUNTAIN = 1;
                 break;
             case 'n':
                 NIAGARA = 1;
+                break;
+            case 's':
+                set_message(optarg);
                 break;
             case 'b':        
                 BOMB = atoi(optarg);
@@ -351,7 +369,7 @@ void opt(int argc,char *argv[]){
                 printf("\n           Hanabi version:%s\n\n", version);
                 exit(0);              
             default: /* '?' */
-                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps] [-i] [-m] [-n] [-v]\n",
+                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps] [-i] [-m] [-n] [-s text] [-v]\n",
                         argv[0]);
                 exit(EXIT_FAILURE);
         }
@@ -413,9 +431,12 @@ int main(int argc,char *argv[]){
     
     int *firework_set;
     int *firework_color_set;
+    int *firework_shape_set;
     int *mountain_set;
+    int sky_floor = NIAGARA ? niagara_summit(width) - 1 : heigth - 3;
     firework_set = malloc(sizeof(int) * number * 2);
     firework_color_set = malloc(sizeof(int) * number * 2);
+    firework_shape_set = malloc(sizeof(int) * number * 2);
     mountain_set = malloc(sizeof(int) * width * 2);
 
     if(MOUNTAIN){
@@ -427,6 +448,7 @@ int main(int argc,char *argv[]){
         firework_set[j+1] = 0;
         firework_color_set[j] = get_color();
         firework_color_set[j+1] = 0;
+        firework_shape_set[j] = pick_shape();
         bomb++;
     }
 
@@ -440,6 +462,7 @@ int main(int argc,char *argv[]){
                 if(rand() % 3){
                     firework_set[j] = launch_length(heigth / 4);
                     firework_set[j+1] = 0;
+                    firework_shape_set[j] = pick_shape();
                 }
             }else{
                 firework_set[j+1]++;
@@ -448,10 +471,14 @@ int main(int argc,char *argv[]){
             if(firework_set[j+1] < firework_set[j]){
                 set_off( j*8 ,firework_set[j+1],heigth);
             }else{
-                fireworks(firework_set[j+1]-firework_set[j]-1, j*8 ,firework_set[j], firework_color_set[j]);
+                fireworks(firework_set[j+1]-firework_set[j]-1, j*8 ,firework_set[j], firework_color_set[j], firework_shape_set[j]);
             }
         }
 
+        special_fireworks(sky_floor);
+        if(has_message()){
+            message_fireworks(i, sky_floor);
+        }
         if(NIAGARA){
             niagara(i, width);
         }
@@ -471,6 +498,7 @@ int main(int argc,char *argv[]){
     endwin();
     free(firework_set);
     free(firework_color_set);
+    free(firework_shape_set);
     free(mountain_set);
     return 0;
 }
