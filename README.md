@@ -83,6 +83,11 @@ $ hanabi -f FPS
 $ hanabi -i
 ```
 
+- Show mountains at the bottom of the screen.
+```bash
+$ hanabi -m
+```
+
 ## Licence
 
 [MIT](https://github.com/MizukiSonoko/hanabi/blob/master/LICENSE)

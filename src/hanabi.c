@@ -127,55 +127,64 @@ void fireworks(int time,int pos,int line_length,int color){
     attrset(COLOR_PAIR(0));
 }
 
+/*
+ * Generate a two-row mountain range into mountain_set.
+ * mountain_set[0..width-1] is the upper row, mountain_set[width..2*width-1] the lower row.
+ * The ridge is tracked as a level (0: ground, 1: lower row, 2: upper row) so that
+ * every '/', '^' and '\' connects to its neighbour.
+ */
+void generate_mountain(int width,int* mountain_set){
+    char texture[] = {' ', ' ', ' ', ' ', ' ', ' ', '.', ','};
+    int *upper = mountain_set;
+    int *lower = mountain_set + width;
+    int level = 0;
+    int x, c;
+
+    for(x = 0;x < width;x++){
+        upper[x] = 0;
+        lower[x] = 0;
+        c = rand() % 10;
+        switch(level){
+            case 0:
+                if(c < 7){
+                    lower[x] = '/';
+                    level = 1;
+                }
+                break;
+            case 1:
+                if(c < 6){
+                    upper[x] = '/';
+                    lower[x] = ' ';
+                    level = 2;
+                }else if(c < 8){
+                    lower[x] = '^';
+                }else{
+                    lower[x] = '\\';
+                    level = 0;
+                }
+                break;
+            case 2:
+                lower[x] = texture[rand() % sizeof(texture)];
+                if(c < 5){
+                    upper[x] = '^';
+                }else{
+                    upper[x] = '\\';
+                    level = 1;
+                }
+                break;
+        }
+    }
+}
+
 void mountain(int line,int width,int* mountain_set){
-    int i = 0, j = 0;
-    int c, h = 0;
-
-    /*
-    if(mountain_set[0] != 0){
-        for(;j < width * 2;j += 2){
-            mvaddch( line, mountain_set[j+1], (char)mountain_set[j]);
+    int x;
+    for(x = 0;x < width;x++){
+        if(mountain_set[x]){
+            mvaddch(line - 1, x, mountain_set[x]);
         }
-        return;
-    }
-    */
-
-    for(;j < width * 2; j += 2){
-        if(h == 0){
-            mountain_set[j] = '/';
-            mountain_set[j+1] = h;
-            h++;
-        }else if(h == 3){
-            c = rand() % 3;
-            if(c == 0){
-                h--;
-                mountain_set[j] = '^';
-                mountain_set[j+1] = h;
-            }else{
-                mountain_set[j] = '\\';
-                mountain_set[j+1] = h;
-                h--;
-            }
-        }else{
-            c = rand() % 3;
-            if(c == 0){
-                h--;
-                mountain_set[j] = '^';
-                mountain_set[j+1] = h;
-            }else if(c == 1){
-                h++;
-                mountain_set[j] = '/';
-                mountain_set[j+1] = h;
-            }else{
-                mountain_set[j] = '\\';
-                mountain_set[j+1] = h;
-                h--;
-            }
+        if(mountain_set[width + x]){
+            mvaddch(line, x, mountain_set[width + x]);
         }
-    }
-
-    for(;j < width * 2;j += 2){
-        mvaddch( line, mountain_set[j+1], (char)mountain_set[j]);
     }
 }
 
@@ -218,7 +227,7 @@ void opt(int argc,char *argv[]){
                 printf("\n           Hanabi version:%s\n\n", version);
                 exit(0);              
             default: /* '?' */
-                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps] [-i]\n",
+                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps] [-i] [-m] [-v]\n",
                         argv[0]);
                 exit(EXIT_FAILURE);
         }
@@ -271,8 +280,8 @@ int main(int argc,char *argv[]){
     firework_color_set = malloc(sizeof(int) * number * 2);
     mountain_set = malloc(sizeof(int) * width * 2);
 
-    for(j=0;j < width * 2;j++){
-        mountain_set[j] = 0;
+    if(MOUNTAIN){
+        generate_mountain(width, mountain_set);
     }
 
     for(j=0;j < number * 2;j += 2){
