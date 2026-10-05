@@ -93,6 +93,13 @@ $ hanabi -m
 $ hanabi -n
 ```
 
+- Launch a text-shaped firework. Letters, numbers and `! ? . , : - +` are supported.
+```bash
+$ hanabi -s "Happy Birthday!"
+```
+
+Star mines, shaped fireworks (heart, smile, star, cat) and big shells appear at random.
+
 ## Licence
 
 [MIT](https://github.com/MizukiSonoko/hanabi/blob/master/LICENSE)
