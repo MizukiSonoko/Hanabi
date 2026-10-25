@@ -60,6 +60,10 @@ $ sudo make install
 $ hanabi
 ```
 
+```
+Usage: hanabi [-b bomb] [-t time] [-f fps] [-i] [-m] [-n] [-s text] [-v]
+```
+
 ## Options
 
 - Set the number of fireworks ball.
@@ -93,12 +97,23 @@ $ hanabi -m
 $ hanabi -n
 ```
 
-- Launch a text-shaped firework. Letters, numbers and `! ? . , : - +` are supported.
+- Launch a text-shaped firework. Letters, numbers and `! ? . , : - +` are supported. Other characters are shown as `?`.
 ```bash
 $ hanabi -s "Happy Birthday!"
 ```
 
-Star mines, shaped fireworks (heart, smile, star, cat) and big shells appear at random.
+- Show the version.
+```bash
+$ hanabi -v
+```
+
+## Special fireworks
+
+These appear at random while the show is running. No option is needed.
+
+- **Star mine**: a rapid volley of small shells launched one after another.
+- **Shaped fireworks (katamono)**: about 1 in 8 shells blooms into a heart, a smile, a star or a cat.
+- **Big shell (nishakudama)**: one huge shell that rises from the ground and bursts with a two-tone core.
 
 ## Licence
 
