@@ -6,6 +6,10 @@
 
 #include <curses.h>
 
+#include "hanabi.h"
+#include "special.h"
+#include "message.h"
+
 char* version = "1.2.0";
 
 char* FLOWER4[] ={
@@ -86,13 +90,27 @@ void set_off(int pos,int length,int heigth){
     printSp(pos, heigth - length, length, LINE);
 }
 
-int get_color(){
+int get_color(void){
     return (rand() % 7) + 1;
 }
 
-void fireworks(int time,int pos,int line_length,int color){
+/* Deterministic pseudo random value, used for patterns that must be stable between frames. */
+unsigned int hash2(int a,int b){
+    unsigned int h = (unsigned int)a * 73856093u ^ (unsigned int)b * 19349663u;
+    h ^= h >> 13;
+    h *= 0x5bd1e995u;
+    h ^= h >> 15;
+    return h;
+}
+
+void fireworks(int time,int pos,int line_length,int color,int shape){
     int i = 0, j = 0;
     attrset(COLOR_PAIR(color) | A_BOLD);
+    if(shape != SHAPE_NONE && time >= 8){
+        draw_shape(shape, time, pos, heigth - line_length);
+        attrset(COLOR_PAIR(0));
+        return;
+    }
     switch(time){
         case 16:case 17:
             for(j=0;j < 8;j++){
@@ -127,56 +145,182 @@ void fireworks(int time,int pos,int line_length,int color){
     attrset(COLOR_PAIR(0));
 }
 
+/*
+ * Generate a two-row mountain range into mountain_set.
+ * mountain_set[0..width-1] is the upper row, mountain_set[width..2*width-1] the lower row.
+ * The ridge is tracked as a level (0: ground, 1: lower row, 2: upper row) so that
+ * every '/', '^' and '\' connects to its neighbour.
+ */
+void generate_mountain(int width,int* mountain_set){
+    char texture[] = {' ', ' ', ' ', ' ', ' ', ' ', '.', ','};
+    int *upper = mountain_set;
+    int *lower = mountain_set + width;
+    int level = 0;
+    int x, c;
+
+    for(x = 0;x < width;x++){
+        upper[x] = 0;
+        lower[x] = 0;
+        c = rand() % 10;
+        switch(level){
+            case 0:
+                if(c < 7){
+                    lower[x] = '/';
+                    level = 1;
+                }
+                break;
+            case 1:
+                if(c < 6){
+                    upper[x] = '/';
+                    lower[x] = ' ';
+                    level = 2;
+                }else if(c < 8){
+                    lower[x] = '^';
+                }else{
+                    lower[x] = '\\';
+                    level = 0;
+                }
+                break;
+            case 2:
+                lower[x] = texture[rand() % sizeof(texture)];
+                if(c < 5){
+                    upper[x] = '^';
+                }else{
+                    upper[x] = '\\';
+                    level = 1;
+                }
+                break;
+        }
+    }
+}
+
 void mountain(int line,int width,int* mountain_set){
-    int i = 0, j = 0;
-    int c, h = 0;
-
-    /*
-    if(mountain_set[0] != 0){
-        for(;j < width * 2;j += 2){
-            mvaddch( line, mountain_set[j+1], (char)mountain_set[j]);
+    int x;
+    for(x = 0;x < width;x++){
+        if(mountain_set[x]){
+            mvaddch(line - 1, x, mountain_set[x]);
         }
-        return;
-    }
-    */
-
-    for(;j < width * 2; j += 2){
-        if(h == 0){
-            mountain_set[j] = '/';
-            mountain_set[j+1] = h;
-            h++;
-        }else if(h == 3){
-            c = rand() % 3;
-            if(c == 0){
-                h--;
-                mountain_set[j] = '^';
-                mountain_set[j+1] = h;
-            }else{
-                mountain_set[j] = '\\';
-                mountain_set[j+1] = h;
-                h--;
-            }
-        }else{
-            c = rand() % 3;
-            if(c == 0){
-                h--;
-                mountain_set[j] = '^';
-                mountain_set[j+1] = h;
-            }else if(c == 1){
-                h++;
-                mountain_set[j] = '/';
-                mountain_set[j+1] = h;
-            }else{
-                mountain_set[j] = '\\';
-                mountain_set[j+1] = h;
-                h--;
-            }
+        if(mountain_set[width + x]){
+            mvaddch(line, x, mountain_set[width + x]);
         }
     }
+}
 
-    for(;j < width * 2;j += 2){
-        mvaddch( line, mountain_set[j+1], (char)mountain_set[j]);
+
+#define NIAGARA_SUMMIT_HALF 3
+#define NIAGARA_MAX_LEVEL 6
+#define NIAGARA_IGNITE_SPEED 2
+#define NIAGARA_BURN_TIME 80
+#define NIAGARA_REST_TIME 30
+
+/* Half width of the Fuji-shaped wire at the given level (0: summit).
+ * It grows quadratically so the slopes are steep near the top and gentle at the foot. */
+int fuji_half_width(int level){
+    return NIAGARA_SUMMIT_HALF + level * (level + 1) / 2;
+}
+
+int fuji_levels(int width,int wire_y){
+    int levels = heigth / 8;
+    if(levels > NIAGARA_MAX_LEVEL){
+        levels = NIAGARA_MAX_LEVEL;
     }
+    if(levels > wire_y - 1){
+        levels = wire_y - 1;
+    }
+    while(levels > 0 && fuji_half_width(levels) * 2 + 1 > width){
+        levels--;
+    }
+    return levels;
+}
+
+/* Returns the row of the wire at column x and stores the character to draw in wire_char. */
+int niagara_wire(int x,int center,int wire_y,int levels,char* wire_char){
+    int d = abs(x - center);
+    int k;
+    if(levels > 0 && d <= NIAGARA_SUMMIT_HALF){
+        *wire_char = '_';
+        return wire_y - levels;
+    }
+    for(k = 1;k <= levels && fuji_half_width(k) < d;k++);
+    if(k > levels){
+        *wire_char = '=';
+        return wire_y;
+    }
+    if(d == fuji_half_width(k - 1) + 1){
+        *wire_char = x < center ? '/' : '\\';
+    }else{
+        *wire_char = k == levels ? '=' : '_';
+    }
+    return wire_y - levels + k;
+}
+
+/* Sparks are a hash of (x, y - t) so the pattern flows down one row per frame.
+ * They thin out as they fall away from the wire. */
+char niagara_spark(int x,int y,int t,int dist,int span){
+    unsigned int h = hash2(x, y - t);
+    if((int)(h % 100) < dist * 60 / span){
+        return ' ';
+    }
+    if(dist <= 2){
+        return "||:'"[(h / 100) % 4];
+    }
+    return ":.'.,|"[(h / 100) % 6];
+}
+
+/* White above the flat wire (snow on Fuji), then yellow fading to red near the ground. */
+int niagara_color(int y,int wire_y,int ground){
+    if(y <= wire_y){
+        return COLOR_PAIR(7) | A_BOLD;
+    }
+    if(y - wire_y < (ground - wire_y) / 2){
+        return COLOR_PAIR(3) | A_BOLD;
+    }
+    return COLOR_PAIR(1) | A_BOLD;
+}
+
+int niagara_wire_y(){
+    return heigth * 3 / 4;
+}
+
+int niagara_summit(int width){
+    int wire_y = niagara_wire_y();
+    return wire_y - fuji_levels(width, wire_y);
+}
+
+/* Draws frame i of a Niagara fireworks whose wire rises like Mt. Fuji in the middle.
+ * The fire starts at the summit, spreads to both ends and burns out in the same order. */
+void niagara(int i,int width){
+    int wire_y = niagara_wire_y();
+    int ground = heigth - 3;
+    int levels = fuji_levels(width, wire_y);
+    int center = width / 2;
+    int cycle = center / NIAGARA_IGNITE_SPEED + NIAGARA_BURN_TIME + ground + NIAGARA_REST_TIME;
+    int t = i % cycle;
+    int x, y, top, lit, from;
+    char wire_char, spark;
+
+    for(x = 0;x < width;x++){
+        top = niagara_wire(x, center, wire_y, levels, &wire_char);
+        lit = t - abs(x - center) / NIAGARA_IGNITE_SPEED;
+
+        attrset(lit >= 0 && lit < NIAGARA_BURN_TIME ? COLOR_PAIR(3) | A_BOLD : COLOR_PAIR(7));
+        mvaddch(top, x, wire_char);
+        if(lit < 0){
+            continue;
+        }
+
+        /* The curtain front falls one row per frame; after burning out its top falls the same way. */
+        from = lit > NIAGARA_BURN_TIME ? lit - NIAGARA_BURN_TIME : 0;
+        for(y = top + 1 + from;y <= ground && y <= top + lit;y++){
+            spark = niagara_spark(x, y, t, y - top, ground - wire_y + levels);
+            if(spark == ' '){
+                continue;
+            }
+            attrset(niagara_color(y, wire_y, ground));
+            mvaddch(y, x, spark);
+        }
+    }
+    attrset(COLOR_PAIR(0));
 }
 
 
@@ -184,14 +328,21 @@ int BOMB = 0;
 bool INFINITE = false;
 int TIME = 0;
 int MOUNTAIN = 0;
+int NIAGARA = 0;
 int FREQUENCY = 0;
 
 void opt(int argc,char *argv[]){
     int result;
-    while((result=getopt(argc,argv,"f:t:b:imv")) != -1){
+    while((result=getopt(argc,argv,"f:t:b:s:imnv")) != -1){
         switch(result){
             case 'm':        
                 MOUNTAIN = 1;
+                break;
+            case 'n':
+                NIAGARA = 1;
+                break;
+            case 's':
+                set_message(optarg);
                 break;
             case 'b':        
                 BOMB = atoi(optarg);
@@ -218,11 +369,25 @@ void opt(int argc,char *argv[]){
                 printf("\n           Hanabi version:%s\n\n", version);
                 exit(0);              
             default: /* '?' */
-                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps] [-i]\n",
+                fprintf(stderr, "Usage: %s [-b bomb] [-t time] [-f fps] [-i] [-m] [-n] [-s text] [-v]\n",
                         argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
+}
+
+/* A flower spans 4 rows above and 3 rows below row heigth - length.
+ * With Niagara it is kept above the Fuji summit so the two never overlap. */
+int launch_length(int base){
+    int low, high;
+    if(NIAGARA){
+        low = heigth - niagara_summit(width) + 4;
+        high = heigth - 4;
+        if(low <= high){
+            return low + rand() % (high - low + 1);
+        }
+    }
+    return rand() % (heigth / 2) + base;
 }
 
 int main(int argc,char *argv[]){
@@ -266,20 +431,24 @@ int main(int argc,char *argv[]){
     
     int *firework_set;
     int *firework_color_set;
+    int *firework_shape_set;
     int *mountain_set;
+    int sky_floor = NIAGARA ? niagara_summit(width) - 1 : heigth - 3;
     firework_set = malloc(sizeof(int) * number * 2);
     firework_color_set = malloc(sizeof(int) * number * 2);
+    firework_shape_set = malloc(sizeof(int) * number * 2);
     mountain_set = malloc(sizeof(int) * width * 2);
 
-    for(j=0;j < width * 2;j++){
-        mountain_set[j] = 0;
+    if(MOUNTAIN){
+        generate_mountain(width, mountain_set);
     }
 
     for(j=0;j < number * 2;j += 2){
-        firework_set[j] = rand() % (heigth / 2) + (heigth / 3);
+        firework_set[j] = launch_length(heigth / 3);
         firework_set[j+1] = 0;
         firework_color_set[j] = get_color();
         firework_color_set[j+1] = 0;
+        firework_shape_set[j] = pick_shape();
         bomb++;
     }
 
@@ -291,8 +460,9 @@ int main(int argc,char *argv[]){
             if(firework_set[j+1] == firework_set[j] + 17){            
                 bomb++;
                 if(rand() % 3){
-                    firework_set[j] = rand() % (heigth / 2) + (heigth / 4);
+                    firework_set[j] = launch_length(heigth / 4);
                     firework_set[j+1] = 0;
+                    firework_shape_set[j] = pick_shape();
                 }
             }else{
                 firework_set[j+1]++;
@@ -301,10 +471,17 @@ int main(int argc,char *argv[]){
             if(firework_set[j+1] < firework_set[j]){
                 set_off( j*8 ,firework_set[j+1],heigth);
             }else{
-                fireworks(firework_set[j+1]-firework_set[j]-1, j*8 ,firework_set[j], firework_color_set[j]);
+                fireworks(firework_set[j+1]-firework_set[j]-1, j*8 ,firework_set[j], firework_color_set[j], firework_shape_set[j]);
             }
         }
 
+        special_fireworks(sky_floor);
+        if(has_message()){
+            message_fireworks(i, sky_floor);
+        }
+        if(NIAGARA){
+            niagara(i, width);
+        }
         if(MOUNTAIN){
             mountain(heigth - 3, width, mountain_set);
         }
@@ -321,6 +498,7 @@ int main(int argc,char *argv[]){
     endwin();
     free(firework_set);
     free(firework_color_set);
+    free(firework_shape_set);
     free(mountain_set);
     return 0;
 }
